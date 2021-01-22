@@ -1,10 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, para } from 'react';
+import { useParams } from 'react-router-dom';
 import Modal from 'react-modal';
+import axios from 'axios';
 import './UserDetails.css';
 
-export default function UserDetails({ username = 'tahir' }) {
-  const [modalIsOpen, setIsOpen] = useState(true);
-  const [userData, setUserData] = useState({
+const namesUrl = 'http://universities.hipolabs.com/search?country=turkey&name=';
+
+export default function UserDetails() {
+  let { username } = useParams();
+
+  const [modalIsOpen, setIsOpen] = useState(false);
+  const [countries, setCountries] = useState([]);
+
+  const [userData, setUserData] = useState([]);
+  const [singleData, setSingleData] = useState({
     school: '',
     degree: '',
     field: '',
@@ -34,17 +43,38 @@ export default function UserDetails({ username = 'tahir' }) {
     setIsOpen(false);
   };
   const handleInput = (event) => {
-    let tempData = userData;
+    let tempData = singleData;
     tempData[event.target.name] = event.target.value;
-    setUserData(tempData);
+    setSingleData(tempData);
   };
 
   const handleSubmit = () => {
-    localStorage.setItem('userData', userData);
+    userData.unshift(singleData);
+    console.log(userData);
+    setUserData(userData);
+    closeModal();
+  };
+
+  const handleSearch = (event) => {
+    getNames(event.target.value);
+  };
+
+  const getNames = async (word) => {
+    let result = await axios.get(`${namesUrl}${word}`);
+    setCountries(result);
+  };
+  let timer;
+  const debouncedCall = (func, delay) => {
+    return function () {
+      const context = this;
+      const args = arguments;
+      clearTimeout(timer);
+      timer = setTimeout(() => func.apply(context, args), delay);
+    };
   };
 
   return (
-    <div className="mt-5">
+    <div className="mt-5 container">
       <h4 className="home-heading mb-3">Welcome to {username}'s education page.</h4>
       <div className="mt-3">
         <button className="add-button" onClick={openModal}>
@@ -55,14 +85,24 @@ export default function UserDetails({ username = 'tahir' }) {
             Close
           </div>
           <div className="mt-5">
-            <div>
-              <input
-                className="modal-inputfield"
-                type="text"
-                name="school"
-                onChange={handleInput}
-                placeholder="School Name"
-              />
+            <input
+              className="modal-inputfield"
+              type="text"
+              name="school"
+              onChange={debouncedCall(handleSearch, 500)}
+              placeholder="School Name"
+            />
+            <div class="dropdown">
+              <div id="myDropdown" class="dropdown-content">
+                <input type="text" placeholder="Search.." id="myInput" onkeyup="filterFunction()" />
+                <a href="#about">About</a>
+                <a href="#base">Base</a>
+                <a href="#blog">Blog</a>
+                <a href="#contact">Contact</a>
+                <a href="#custom">Custom</a>
+                <a href="#support">Support</a>
+                <a href="#tools">Tools</a>
+              </div>
             </div>
             <input
               className="modal-inputfield"
@@ -80,10 +120,10 @@ export default function UserDetails({ username = 'tahir' }) {
             />
             <input
               className="modal-inputfield"
-              type="text"
+              type="number"
               name="start_year"
               onChange={handleInput}
-              placeholder="Your name"
+              placeholder="Start year"
             />
             <input
               className="modal-inputfield"
@@ -102,40 +142,37 @@ export default function UserDetails({ username = 'tahir' }) {
           </div>
         </Modal>
       </div>
-      <div className="row container-fluid mt-5">
-        <div className="col-md-4">
-          <div style={{ backgroundColor: '#e5e5e5', padding: 15, borderRadius: 7 }}>
-            <h3 className="text-left">Showwcase University</h3>
-            <p className="text-left">Forward Bootcamp</p>
-          </div>
+      {userData.length === 0 ? (
+        <div className="mt-3" style={{ height: 150, backgroundColor: '#e5e5e5', padding: 15, borderRadius: 7 }}>
+          Data Not Added
         </div>
-        <div className="col-md-8">
-          <div style={{ backgroundColor: '#e5e5e5', padding: 15, borderRadius: 7 }}>
-            <h3 className="text-left">Graduate Computer Science @Showwcase University</h3>
-            <p className="text-left">August 2019 - Present</p>
-
-            <div className="text-left">
-              <ul>
-                <li>"Not all those who are lost"</li>
-                <li>"Not all those who are lost"</li>
-                <li>"Not all those who are lost"</li>
-              </ul>
+      ) : (
+        <div className="row container-fluid mt-5">
+          <div className="col-md-4">
+            <div style={{ backgroundColor: '#e5e5e5', padding: 15, borderRadius: 7 }}>
+              <h3 className="text-left">{userData[0].school}</h3>
+              <p className="text-left">{userData[0].degree}</p>
             </div>
           </div>
-          <div className="mt-3" style={{ backgroundColor: '#e5e5e5', padding: 15, borderRadius: 7 }}>
-            <h3 className="text-left">Graduate Computer Science @Showwcase University</h3>
-            <p className="text-left">August 2019 - Present</p>
-
-            <div className="text-left">
-              <ul>
-                <li>"Not all those who are lost"</li>
-                <li>"Not all those who are lost"</li>
-                <li>"Not all those who are lost"</li>
-              </ul>
-            </div>
+          <div className="col-md-8">
+            {userData.map((experience) => {
+              return (
+                <div style={{ backgroundColor: '#e5e5e5', padding: 15, borderRadius: 7 }}>
+                  <h3 className="text-left">
+                    {experience.degree} @{experience.school}
+                  </h3>
+                  <p className="text-left">
+                    {experience.start_year} - {experience.end_year}
+                  </p>
+                  <p className="text-left">
+                    <strong>Grades:</strong> {experience.grade}
+                  </p>
+                </div>
+              );
+            })}
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
