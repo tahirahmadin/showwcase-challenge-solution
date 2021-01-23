@@ -1,4 +1,4 @@
-import React, { useState, para } from 'react';
+import React, { useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import Modal from 'react-modal';
 import axios from 'axios';
@@ -9,10 +9,10 @@ const namesUrl = 'http://universities.hipolabs.com/search?country=turkey&name=';
 export default function UserDetails() {
   let { username } = useParams();
 
+  const inputEl = useRef(null);
   const [modalIsOpen, setIsOpen] = useState(false);
   const [college, setCollege] = useState([]);
   const [displayDropdown, setDisplayDropdown] = useState(false);
-
   const [userData, setUserData] = useState([]);
   const [singleData, setSingleData] = useState({
     school: '',
@@ -33,6 +33,8 @@ export default function UserDetails() {
       transform: 'translate(-50%, -50%)',
       height: 500,
       width: 500,
+      backgroundColor: '#eeeeee',
+      borderRadius: 10,
     },
   };
 
@@ -43,6 +45,7 @@ export default function UserDetails() {
   const closeModal = () => {
     setIsOpen(false);
   };
+
   const handleInput = (event) => {
     let tempData = singleData;
     tempData[event.target.name] = event.target.value;
@@ -50,9 +53,19 @@ export default function UserDetails() {
   };
 
   const handleSubmit = () => {
-    userData.unshift(singleData);
+    let newData = [...userData, singleData];
     console.log(userData);
-    setUserData(userData);
+    console.log(singleData);
+    console.log(newData);
+    setUserData(newData);
+    setSingleData({
+      school: '',
+      degree: '',
+      field: '',
+      start_year: '',
+      end_year: '',
+      grade: '',
+    });
     closeModal();
   };
 
@@ -65,12 +78,19 @@ export default function UserDetails() {
     setCollege(result.data);
     setDisplayDropdown(true);
   };
+
   const handleDropdown = (schoolName) => {
+    inputEl.current.value = schoolName;
     let tempData = singleData;
     tempData['school'] = schoolName;
     setSingleData(tempData);
     setDisplayDropdown(false);
   };
+  // const handleInputDropdown = () => {
+  //   let tempData = singleData;
+  //   tempData['school'] = inputEl.current.value;
+  //   setSingleData(tempData);
+  // };
 
   let timer;
   const debouncedCall = (func, delay) => {
@@ -93,12 +113,12 @@ export default function UserDetails() {
           <div className="float-right close-icon" onClick={closeModal}>
             Close
           </div>
-          <div className="mt-5">
+          <div className="mt-3">
             <input
               className="modal-inputfield"
               type="text"
               name="school"
-              value={singleData.school}
+              ref={inputEl}
               onChange={debouncedCall(handleSearch, 500)}
               placeholder="School Name"
             />
@@ -146,7 +166,10 @@ export default function UserDetails() {
           </div>
 
           <div className="text-right" style={{ position: 'absolute', bottom: 0, right: 0, margin: 10 }}>
-            <button onClick={handleSubmit} className="button btn-primary" style={{ borderRadius: 7 }}>
+            <button
+              onClick={handleSubmit}
+              className="button btn-primary"
+              style={{ borderRadius: 7, padding: '5px 15px 5px 15px', backgroundColor: 'purple', outline: 'none' }}>
               Save
             </button>
           </div>

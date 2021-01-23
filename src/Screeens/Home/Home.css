@@ -1,5 +1,6 @@
 .home-container {
-  height: 90vh;
+  min-height: 90vh;
+  overflow-y: scroll;
   display: flex;
   flex-direction: column;
   justify-content: space-around;
