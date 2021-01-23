@@ -2,6 +2,9 @@
 
 This assignment is implemented based on mockups and requirements [Live Preview](https://600bb234df37f0c4f0757760--college-data-management.netlify.app).
 
+![Screenshot](screenshot.png)
+
+
 ## Available Scripts
 
 In the project directory, you can run:
