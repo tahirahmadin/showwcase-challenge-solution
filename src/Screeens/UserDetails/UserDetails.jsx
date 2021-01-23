@@ -10,7 +10,8 @@ export default function UserDetails() {
   let { username } = useParams();
 
   const [modalIsOpen, setIsOpen] = useState(false);
-  const [countries, setCountries] = useState([]);
+  const [college, setCollege] = useState([]);
+  const [displayDropdown, setDisplayDropdown] = useState(false);
 
   const [userData, setUserData] = useState([]);
   const [singleData, setSingleData] = useState({
@@ -61,8 +62,16 @@ export default function UserDetails() {
 
   const getNames = async (word) => {
     let result = await axios.get(`${namesUrl}${word}`);
-    setCountries(result);
+    setCollege(result.data);
+    setDisplayDropdown(true);
   };
+  const handleDropdown = (schoolName) => {
+    let tempData = singleData;
+    tempData['school'] = schoolName;
+    setSingleData(tempData);
+    setDisplayDropdown(false);
+  };
+
   let timer;
   const debouncedCall = (func, delay) => {
     return function () {
@@ -89,21 +98,22 @@ export default function UserDetails() {
               className="modal-inputfield"
               type="text"
               name="school"
+              value={singleData.school}
               onChange={debouncedCall(handleSearch, 500)}
               placeholder="School Name"
             />
-            <div class="dropdown">
-              <div id="myDropdown" class="dropdown-content">
-                <input type="text" placeholder="Search.." id="myInput" onkeyup="filterFunction()" />
-                <a href="#about">About</a>
-                <a href="#base">Base</a>
-                <a href="#blog">Blog</a>
-                <a href="#contact">Contact</a>
-                <a href="#custom">Custom</a>
-                <a href="#support">Support</a>
-                <a href="#tools">Tools</a>
+            {displayDropdown && (
+              <div className="dropdown-box">
+                {college.map((singleCollege) => {
+                  return (
+                    <p className="college-name text-left" onClick={() => handleDropdown(singleCollege.name)}>
+                      {singleCollege.name}
+                    </p>
+                  );
+                })}
               </div>
-            </div>
+            )}
+
             <input
               className="modal-inputfield"
               type="text"
